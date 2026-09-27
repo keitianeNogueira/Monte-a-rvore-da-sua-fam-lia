@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mapa das Origens</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700;900&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --terracota: #C1553B;
+    --terracota-escuro: #9c4029;
+    --azul-profundo: #2B4570;
+    --ocre: #D9A441;
+    --verde-oliva: #6B8F5E;
+    --areia: #F6EFE3;
+    --areia-card: #FFFFFF;
+    --texto: #2E2A24;
+    --texto-suave: #6b6259;
+    --linha: #e6dcc8;
+    --titulo: #2B4570;
+    --btn-sec: #2B4570;
+    --aviso-bg: #FFF3D6;
+    --ok-bg: #e5f2e0;   --ok-txt: #3f6334;
+    --erro-bg: #fbe6e2; --erro-txt: #9c4029;
+    --galho-turma: #c9bfa8;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --areia: #1d1912; --areia-card: #2a2419; --texto: #f2ece0;
+      --texto-suave: #c2b8a5; --linha: #443c2c;
+      --titulo: #eadfc4; --btn-sec: #9db6de;
+      --aviso-bg: #3a2f17;
+      --ok-bg: #22301d;   --ok-txt: #a9cf99;
+      --erro-bg: #3a1f19; --erro-txt: #f0a794;
+      --galho-turma: #6a5f4b;
+    }
+  }
+  :root[data-theme="dark"]{
+    --areia: #1d1912; --areia-card: #2a2419; --texto: #f2ece0;
+    --texto-suave: #c2b8a5; --linha: #443c2c;
+    --titulo: #eadfc4; --btn-sec: #9db6de;
+    --aviso-bg: #3a2f17;
+    --ok-bg: #22301d;   --ok-txt: #a9cf99;
+    --erro-bg: #3a1f19; --erro-txt: #f0a794;
+    --galho-turma: #6a5f4b;
+  }
+
+  *{ box-sizing:border-box; }
+  html{ scroll-padding-top: env(safe-area-inset-top, 0px); }
+  body{
+    margin:0; min-height:100vh;
+    background: var(--areia);
+    color: var(--texto);
+    font-family: 'Inter', -apple-system, sans-serif;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    overflow-x: hidden;
+  }
+  h1,h2,h3{ font-family: 'Fraunces', Georgia, serif; margin:0; }
+
+  .hero{
+    position:relative;
+    background: linear-gradient(160deg, var(--azul-profundo), #1c2f4d);
+    color: #FBF6EC;
+    padding: 44px 22px 38px;
+    text-align:center;
+    overflow:hidden;
+  }
+  .hero-deco{ position:absolute; inset:0; width:100%; height:100%; opacity:0.5; pointer-events:none; }
+  .bussola{ animation: girar 26s linear infinite; transform-box: fill-box; transform-origin:center; }
+  @keyframes girar{ from{transform:rotate(0deg);} to{transform:rotate(360deg);} }
+  .hero-conteudo{ position:relative; z-index:2; }
+  .hero .eyebrow{
+    display:inline-block; background: rgba(255,255,255,0.14);
+    border: 1px solid rgba(255,255,255,0.25);
+    padding: 6px 18px; border-radius: 999px;
+    font-size: 12.5px; font-weight:700; letter-spacing: 1px;
+    text-transform: uppercase; margin-bottom: 16px;
+  }
+  .hero h1{ font-size: clamp(26px, 5vw, 40px); font-weight:700; line-height:1.15; }
+  .hero p{
+    margin: 14px auto 0; font-size: 15px; opacity:0.88; max-width: 580px; line-height:1.6;
+  }
+
+  .container{ max-width: 920px; margin: 0 auto; padding: 30px 16px calc(50px + env(safe-area-inset-bottom, 0px)); }
+
+  .secao-titulo{ font-family:'Fraunces',serif; font-weight:700; font-size: 20px; color: var(--titulo); margin-bottom: 6px; }
+  .secao-sub{ font-size: 13.5px; color: var(--texto-suave); margin-bottom: 16px; line-height:1.5; }
+
+  .aviso{
+    background: var(--aviso-bg); color: var(--texto);
+    border-left: 4px solid var(--ocre); border-radius: 10px;
+    padding: 10px 14px; font-size: 13px; line-height:1.5; margin-bottom: 20px; display:none;
+  }
+  .aviso.mostrar{ display:block; }
+
+  /* ---------- FORM ---------- */
+  .form-card{
+    background: var(--areia-card); border-radius: 22px; padding: 22px 18px 24px;
+    box-shadow: 0 6px 0 rgba(0,0,0,0.04), 0 16px 32px rgba(0,0,0,0.08);
+    margin-bottom: 36px;
+  }
+  .campo{ margin-bottom: 12px; }
+  .campo > label{ display:block; font-size: 12.5px; font-weight:700; color: var(--texto-suave); margin-bottom: 4px; }
+  .campo input[type="text"], .campo select{
+    width:100%; min-width:0; padding: 10px 12px; border-radius: 10px;
+    border: 1.5px solid var(--linha); background: var(--areia); color: var(--texto);
+    font-family:inherit; font-size: 16px;
+  }
+  @media (min-width: 700px){ .campo input[type="text"], .campo select{ font-size: 13.5px; } }
+  .campo input:focus, .campo select:focus{ outline:none; border-color: var(--terracota); }
+  .campo .campo-nome-parente{ margin-bottom: 8px; font-weight: 600; }
+
+  .grupo-parente{
+    border: 1.5px dashed var(--linha);
+    border-radius: 16px;
+    padding: 14px 14px 4px;
+    margin-bottom: 16px;
+    min-width: 0;
+  }
+  .grupo-titulo{
+    font-family:'Fraunces',serif; font-weight:700; font-size: 14.5px;
+    margin-bottom: 10px; display:flex; align-items:center; gap: 8px;
+  }
+  .grupo-titulo .bolinha-cor{ width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+  .linha-parente{ display:grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  @media (max-width: 520px){ .linha-parente{ grid-template-columns: 1fr; } }
+
+  .linha-nome{ display:flex; gap: 10px; align-items:stretch; }
+  .linha-nome input{ flex:1; }
+  @media (max-width: 480px){ .linha-nome{ flex-direction:column; } }
+
+  .linha-dupla-avos{ display:grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media (max-width: 640px){ .linha-dupla-avos{ grid-template-columns: 1fr; } }
+
+  .btn-enviar{
+    width:100%; margin-top: 6px; background: var(--terracota); color:white; border:none;
+    padding: 14px; border-radius: 14px; font-family:'Fraunces',serif; font-weight:700;
+    font-size: 16px; cursor:pointer;
+  }
+  .btn-enviar:active{ transform: scale(0.98); }
+  .btn-enviar:disabled{ opacity:0.6; cursor:default; }
+
+  .btn-secundario{
+    flex-shrink:0; white-space:nowrap;
+    border: 1.5px solid var(--btn-sec); background: transparent; color: var(--btn-sec);
+    font-weight:700; font-size: 12.5px; padding: 9px 12px; border-radius: 10px; cursor:pointer;
+    font-family: inherit;
+  }
+
+  .btn-excluir{
+    width:100%; margin-top: 8px; background: transparent;
+    color: var(--erro-txt); border: 1.5px solid var(--terracota);
+    padding: 11px; border-radius: 14px; font-weight:700; font-size: 13.5px; cursor:pointer;
+    font-family: inherit;
+  }
+  .btn-excluir.confirmando{ background: var(--terracota); color:white; }
+
+  .foto-linha{ display:flex; align-items:center; gap: 8px; margin-top: 6px; }
+  .foto-linha[hidden]{ display:none; }
+  .foto-btn{
+    display:flex; align-items:center; gap: 6px;
+    border: 1.5px dashed var(--linha); border-radius: 10px;
+    padding: 5px 10px; font-size: 12px; font-weight:700;
+    color: var(--texto-suave); cursor:pointer;
+  }
+  .foto-btn span{
+    width: 22px; height:22px; border-radius:50%; overflow:hidden;
+    display:flex; align-items:center; justify-content:center;
+    font-size: 14px; background: var(--areia); flex-shrink:0;
+  }
+  .foto-btn span img{ width:100%; height:100%; object-fit:cover; }
+  .foto-status{ font-size: 11.5px; color: var(--texto-suave); }
+
+  /* ---------- GERENCIAR LISTA ---------- */
+  .gerenciar-lista{ display:flex; flex-direction:column; gap: 8px; margin-bottom: 10px; }
+  .gerenciar-item{
+    background: var(--areia-card); border-radius: 12px; padding: 10px 14px;
+    display:flex; align-items:center; gap: 10px; box-shadow: 0 2px 0 rgba(0,0,0,0.03);
+  }
+  .gerenciar-nome{ flex:1; min-width:0; font-weight:700; font-size: 13.5px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .gerenciar-btn{
+    border:none; border-radius: 8px; padding: 6px 11px;
+    font-size: 12px; font-weight:700; cursor:pointer; white-space:nowrap; font-family: inherit;
+  }
+  .gerenciar-btn.editar{ background: var(--azul-profundo); color:white; }
+  .gerenciar-btn.excluir{ background:transparent; border: 1.5px solid var(--terracota); color: var(--erro-txt); }
+  .gerenciar-btn.excluir.confirmando{ background: var(--terracota); color:white; }
+
+  .msg-status{
+    margin-top: 12px; padding: 10px 14px; border-radius: 10px;
+    font-size: 13.5px; font-weight:600; display:none;
+  }
+  .msg-status.mostrar{ display:block; }
+  .msg-status.ok{ background: var(--ok-bg); color: var(--ok-txt); }
+  .msg-status.erro{ background: var(--erro-bg); color: var(--erro-txt); }
+
+  /* ---------- ÁRVORE ---------- */
+  .arvore-wrap{
+    background: var(--areia-card); border-radius: 24px; padding: 20px 12px;
+    box-shadow: 0 6px 0 rgba(0,0,0,0.04), 0 16px 32px rgba(0,0,0,0.08);
+    margin-bottom: 30px; text-align:center;
+  }
+  .arvore-svg{ display:none; max-width: 720px; width:100%; height:auto; margin: 0 auto; }
+  .arvore-vazia{ padding: 30px; color: var(--texto-suave); font-style:italic; font-size:14px; }
+  .no-familia{ transform-box: fill-box; transform-origin:center; animation: pop 0.45s cubic-bezier(.34,1.56,.64,1) backwards; }
+  @keyframes pop{ from{ transform:scale(0);} to{ transform:scale(1);} }
+  .galho{ stroke-dasharray:1000; stroke-dashoffset:1000; animation: desenhar 0.9s ease forwards; }
+  @keyframes desenhar{ to{ stroke-dashoffset:0; } }
+  .rotulo{ font-family: Inter, sans-serif; }
+  .rotulo-aluno{ fill: var(--texto); }
+  .rotulo-local{ fill: var(--texto-suave); }
+
+  .legenda{ display:flex; flex-wrap:wrap; justify-content:center; gap: 6px 14px; margin-top: 12px; font-size: 12px; color: var(--texto-suave); }
+  .legenda span{ display:inline-flex; align-items:center; gap: 5px; }
+  .legenda i{ width:10px; height:10px; border-radius:50%; display:inline-block; }
+
+  .contador-total{ font-family:'Fraunces',serif; font-size: 14.5px; color: var(--texto-suave); margin-top: 10px; }
+  .contador-total b{ color: var(--terracota); font-size:21px; }
+
+  footer{
+    text-align:center; font-size: 12.5px; color: var(--texto-suave);
+    padding: 10px 20px calc(24px + env(safe-area-inset-bottom, 0px)); opacity:0.7;
+  }
+
+  .confete-camada{ position: fixed; inset:0; pointer-events:none; z-index: 999; overflow:hidden; }
+  .confete-peca{ position:absolute; top:-20px; border-radius:2px; animation: cair linear forwards; }
+  @keyframes cair{ to{ transform: translateY(110vh) rotate(540deg); opacity:0.3; } }
+
+  @media (prefers-reduced-motion: reduce){
+    .bussola, .no-familia, .galho, .confete-peca{ animation: none !important; }
+    .galho{ stroke-dashoffset: 0; }
+  }
+</style>
+</head>
+<body>
+<div class="confete-camada" id="confeteCamada"></div>
+
+  <div class="hero">
+    <svg class="hero-deco" viewBox="0 0 600 300" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+      <g class="bussola" opacity="0.35">
+        <circle cx="60" cy="60" r="34" fill="none" stroke="#D9A441" stroke-width="1.4"/>
+        <path d="M60 30 L66 58 L60 90 L54 58 Z" fill="#D9A441"/>
+      </g>
+      <g class="bussola" opacity="0.28" style="animation-direction:reverse; animation-duration:34s;">
+        <circle cx="540" cy="230" r="46" fill="none" stroke="#FBF6EC" stroke-width="1.2"/>
+        <path d="M540 190 L548 226 L540 270 L532 226 Z" fill="#FBF6EC"/>
+      </g>
+      <path d="M20 220 Q160 160 260 210 T520 190" fill="none" stroke="#D9A441" stroke-width="2" stroke-dasharray="4 8" opacity="0.5"/>
+    </svg>
+    <div class="hero-conteudo">
+      <span class="eyebrow">8º ano · Direitos Humanos e Migrações</span>
+      <h1>🌳 Mapa das Origens</h1>
+      <p>Cada aluno monta a árvore genealógica da própria família — pais e avós, e de onde
+      cada um veio. No final, todas as árvores se juntam em um grande mapa de fluxos
+      migratórios da turma.</p>
+    </div>
+  </div>
+
+  <div class="container">
+
+    <div class="aviso" id="avisoSemDb">
+      <b>Modo local:</b> as árvores estão sendo salvas só neste computador/navegador.
+      Para a turma toda preencher junta, cada um em seu celular, use o link publicado da atividade.
+    </div>
+
+    <div class="secao-titulo">🌱 Monte a árvore da sua família</div>
+    <div class="secao-sub">Preencha seu nome e a origem de cada parente que você souber. Pode deixar em branco o que não souber — e pode editar depois: escreva seu nome e toque em "Carregar meus dados".</div>
+
+    <div class="form-card" id="formCard">
+      <div class="campo">
+        <label for="campoAluno">Seu nome (aluno/a)</label>
+        <div class="linha-nome">
+          <input type="text" id="campoAluno" placeholder="Ex: Keitiane" maxlength="60" autocomplete="off">
+          <button type="button" class="btn-secundario" id="btnCarregar">🔎 Carregar meus dados</button>
+        </div>
+      </div>
+
+      <div class="linha-dupla-avos">
+        <div class="grupo-parente" data-lado="pai">
+          <div class="grupo-titulo"><span class="bolinha-cor" style="background:var(--azul-profundo);"></span> Lado do pai</div>
+        </div>
+        <div class="grupo-parente" data-lado="mae">
+          <div class="grupo-titulo"><span class="bolinha-cor" style="background:var(--terracota);"></span> Lado da mãe</div>
+        </div>
+      </div>
+
+      <button type="button" class="btn-enviar" id="btnEnviar">Salvar minha árvore 🌳</button>
+      <button type="button" class="btn-excluir" id="btnExcluir">🗑️ Excluir minha árvore</button>
+      <div class="msg-status" id="msgStatus" role="status" aria-live="polite"></div>
+    </div>
+
+    <div class="secao-titulo">🌳 Árvore Genealógica da Turma</div>
+    <div class="secao-sub">No centro está a turma. Cada galho leva a um aluno, e de cada aluno saem os galhos da própria família — com o lugar de onde cada um veio. A cor de cada círculo mostra a região de origem.</div>
+
+    <div class="arvore-wrap">
+      <svg class="arvore-svg" id="arvoreTurmaSvg" viewBox="0 0 900 900" role="img" aria-label="Árvore genealógica da turma"></svg>
+      <div class="arvore-vazia" id="arvoreVazia">Ninguém montou uma árvore ainda. Seja o primeiro! 🌱</div>
+      <div class="legenda" id="legenda"></div>
+      <div class="contador-total"><b id="contadorNum">0</b> origens de família somadas de <b id="contadorArvores">0</b> alunos</div>
+    </div>
+
+    <div class="secao-titulo">🗂️ Gerenciar árvores salvas</div>
+    <div class="secao-sub">Errou alguma coisa? Encontre seu nome na lista e edite ou apague sua árvore diretamente daqui.</div>
+    <div class="gerenciar-lista" id="gerenciarLista">
+      <div class="arvore-vazia">Nenhuma árvore salva ainda.</div>
+    </div>
+
+  </div>
+
+  <footer>Mapa das Origens — Atividade de Migrações · 8º ano</footer>
+
+<script>
+  const REGIOES = ["Norte","Nordeste","Centro-Oeste","Sudeste","Sul","Exterior","Não sei"];
+  const CORES_REGIAO = {
+    "Norte": "#6B8F5E", "Nordeste": "#C1553B", "Centro-Oeste": "#D9A441",
+    "Sudeste": "#2B4570", "Sul": "#7C6BAE", "Exterior": "#3BA99F", "Não sei": "#999999"
+  };
+  const PARENTES = ['avoPaterno','avoPaterna','pai','avoMaterno','avoMaterna','mae'];
+  const LADO = { avoPaterno:'pai', avoPaterna:'pai', pai:'pai', avoMaterno:'mae', avoMaterna:'mae', mae:'mae' };
+  const LABEL_PARENTE = {
+    avoPaterno: "Avô paterno", avoPaterna: "Avó paterna", pai: "Pai",
+    avoMaterno: "Avô materno", avoMaterna: "Avó materna", mae: "Mãe"
+  };
+  const COLECAO = 'arvores';
+
+  const $ = (id) => document.getElementById(id);
+
+  function escapeHtml(str){
+    if(str === null || str === undefined) return '';
+    return String(str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  }
+
+  /* ---------- Monta os campos dos parentes (evita HTML repetido) ---------- */
+  PARENTES.forEach(k => {
+    const grupo = document.querySelector(`.grupo-parente[data-lado="${LADO[k]}"]`);
+    const campo = document.createElement('div');
+    campo.className = 'campo';
+    campo.innerHTML = `
+      <label for="${k}Nome">${LABEL_PARENTE[k]}</label>
+      <input type="text" id="${k}Nome" class="campo-nome-parente" placeholder="Nome (ex: Maria, vó Lurdes)" maxlength="40" autocomplete="off">
+      <div class="linha-parente">
+        <input type="text" id="${k}Local" placeholder="De onde veio? (cidade)" maxlength="60" autocomplete="off">
+        <select id="${k}Regiao" aria-label="Região de origem — ${LABEL_PARENTE[k]}">
+          <option value="">Região…</option>
+          ${REGIOES.map(r => `<option value="${r}">${r}</option>`).join('')}
+        </select>
+      </div>
+      <div class="foto-linha" data-foto hidden>
+        <label class="foto-btn" for="${k}Foto"><span id="${k}FotoPreview">📷</span> Foto</label>
+        <input type="file" accept="image/*" id="${k}Foto" style="display:none">
+        <span class="foto-status" id="${k}FotoStatus"></span>
+      </div>`;
+    grupo.appendChild(campo);
+    campo.querySelector(`#${k}Foto`).addEventListener('change', (e) => handleFotoUpload(e.target, k));
+  });
+
+  // Legenda de cores
+  $('legenda').innerHTML = REGIOES.map(r =>
+    `<span><i style="background:${CORES_REGIAO[r]}"></i>${r}</span>`).join('');
+
+  /* Id do documento a partir do nome. Retorna '' se o nome não tiver letras/números. */
+  function slugify(nome){
+    return String(nome || '').trim().toLowerCase()
+      .normalize('NFD').replace(/[̀-ͯ]/g,'')
+      .replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'')
+      .slice(0, 80);
+  }
+  function nomeValido(nome){ return slugify(nome).length > 0; }
+
+  // Ids de asset são 32 caracteres hex; qualquer outra coisa é ignorada.
+  function fotoSegura(id){ return (typeof id === 'string' && /^[0-9a-f]{32}$/i.test(id)) ? id : null; }
+
+  let dbRef = null;
+  let assetsRef = null;
+  let arvores = [];
+  let totalAnterior = 0;
+  let fotosPendentes = {};
+
+  /* ---------- Mensagens ---------- */
+  let msgTimer = null;
+  function mostrarMsg(tipo, texto, duracao){
+    const el = $('msgStatus');
+    clearTimeout(msgTimer);
+    el.classList.remove('ok','erro');
+    el.classList.add('mostrar', tipo);
+    el.textContent = texto;
+    msgTimer = setTimeout(() => el.classList.remove('mostrar'), duracao || 5000);
+  }
+
+  function mensagemErro(e, acao){
+    const code = e && e.code;
+    if(code === 'invalid_argument') return `Sem permissão para ${acao}. Peça ao professor acesso de "Colaborador" ao link.`;
+    if(code === 'quota_exceeded') return 'O espaço de armazenamento da atividade está cheio. Avise o professor.';
+    if(code === 'resource_exhausted') return 'Muitas ações seguidas. Espere alguns segundos e tente de novo.';
+    if(code === 'revoked' || code === 'not_granted') return 'O acesso a esta atividade mudou. Recarregue a página.';
+    return `Não deu para ${acao} agora. Tente novamente em instantes.`;
+  }
+
+  /* ---------- Banco de dados ---------- */
+  /* Modo local: quando o arquivo é aberto direto no computador, as árvores
+     ficam salvas só neste navegador (localStorage). */
+  function criarDbLocal(){
+    const CHAVE = 'mapa-das-origens:arvores';
+    const ouvintes = [];
+    let memoria = {};
+    try{ memoria = JSON.parse(localStorage.getItem(CHAVE) || '{}') || {}; }catch(e){ memoria = {}; }
+    const gravar = () => { try{ localStorage.setItem(CHAVE, JSON.stringify(memoria)); }catch(e){} };
+    const snapDoc = (id) => ({ id, exists: !!memoria[id], data: () => memoria[id] });
+    const avisar = () => {
+      const docs = Object.keys(memoria)
+        .sort((a, b) => (memoria[b].atualizadoEm || 0) - (memoria[a].atualizadoEm || 0))
+        .map(snapDoc);
+      ouvintes.forEach(fn => fn({ docs, size: docs.length, empty: !docs.length }));
+    };
+    const colecao = {
+      orderBy(){ return colecao; },
+      limit(){ return colecao; },
+      onSnapshot(fn){ ouvintes.push(fn); setTimeout(avisar, 0); return () => {}; },
+      doc(id){
+        return {
+          async get(){ return snapDoc(id); },
+          async set(dados){ memoria[id] = JSON.parse(JSON.stringify(dados)); gravar(); avisar(); },
+          async delete(){ delete memoria[id]; gravar(); avisar(); }
+        };
+      }
+    };
+    return { collection(){ return colecao; } };
+  }
+
+  async function iniciarDb(){
+    const temClaude = window.claude && typeof window.claude.use === 'function';
+    let db = null, assets = null;
+    if(temClaude){
+      [db, assets] = await Promise.all([
+        window.claude.use('db').catch(() => null),
+        window.claude.use('assets').catch(() => null)
+      ]);
+    }
+
+    if(assets){
+      assetsRef = assets;
+      document.querySelectorAll('[data-foto]').forEach(el => el.hidden = false);
+    }
+
+    if(!db){
+      $('avisoSemDb').classList.add('mostrar');
+      db = criarDbLocal();
+    }
+    dbRef = db;
+    assinarArvores();
+  }
+
+  function assinarArvores(){
+    dbRef.collection(COLECAO).orderBy('atualizadoEm','desc').limit(500).onSnapshot(
+      (snap) => {
+        arvores = snap.docs
+          .map(d => ({ id: d.id, ...d.data() }))
+          .filter(a => a && typeof a.aluno === 'string');
+        renderTudo();
+      },
+      (err) => {
+        console.error('Erro ao ler árvores:', err);
+        if(err && err.code === 'unavailable') setTimeout(assinarArvores, 3000);
+      }
+    );
+  }
+
+  /* ---------- Foto: reduz no navegador antes de enviar ---------- */
+  function reduzirImagem(arquivo, lado){
+    return new Promise((resolve) => {
+      const url = URL.createObjectURL(arquivo);
+      const img = new Image();
+      img.onload = () => {
+        const escala = Math.min(1, lado / Math.max(img.width, img.height));
+        const w = Math.round(img.width * escala), h = Math.round(img.height * escala);
+        const c = document.createElement('canvas');
+        c.width = w; c.height = h;
+        c.getContext('2d').drawImage(img, 0, 0, w, h);
+        URL.revokeObjectURL(url);
+        c.toBlob(b => resolve(b || arquivo), 'image/jpeg', 0.85);
+      };
+      img.onerror = () => { URL.revokeObjectURL(url); resolve(arquivo); };
+      img.src = url;
+    });
+  }
+
+  async function handleFotoUpload(inputEl, prefixo){
+    const arquivo = inputEl.files && inputEl.files[0];
+    inputEl.value = ''; // permite escolher a mesma foto de novo
+    if(!arquivo) return;
+    const statusEl = $(prefixo + 'FotoStatus');
+    const previewEl = $(prefixo + 'FotoPreview');
+    if(!assetsRef){ statusEl.textContent = 'Upload indisponível aqui.'; return; }
+    statusEl.textContent = 'Enviando...';
+    try{
+      const blob = await reduzirImagem(arquivo, 480);
+      const res = await assetsRef.upload(blob);
+      fotosPendentes[prefixo] = res.id;
+      previewEl.innerHTML = '';
+      const img = document.createElement('img');
+      img.src = res.url; img.alt = '';
+      previewEl.appendChild(img);
+      statusEl.textContent = 'Foto pronta ✓ (salve a árvore)';
+    } catch(e){
+      console.error(e);
+      statusEl.textContent = 'Falha ao enviar a foto.';
+    }
+  }
+
+  /* ---------- Formulário ---------- */
+  function limparFormulario(){
+    $('campoAluno').value = '';
+    PARENTES.forEach(k => {
+      $(k + 'Nome').value = '';
+      $(k + 'Local').value = '';
+      $(k + 'Regiao').value = '';
+      $(k + 'FotoPreview').textContent = '📷';
+      $(k + 'FotoStatus').textContent = '';
+    });
+    fotosPendentes = {};
+  }
+
+  function preencherFormulario(dados){
+    fotosPendentes = {};
+    PARENTES.forEach(k => {
+      const d = dados[k];
+      $(k + 'Nome').value = d && d.nome ? d.nome : '';
+      $(k + 'Local').value = d && d.local ? d.local : '';
+      $(k + 'Regiao').value = d && REGIOES.includes(d.regiao) ? d.regiao : '';
+      $(k + 'FotoStatus').textContent = '';
+      const previewEl = $(k + 'FotoPreview');
+      const foto = d ? fotoSegura(d.foto) : null;
+      if(foto){
+        fotosPendentes[k] = foto;
+        previewEl.innerHTML = `<img src="/_blob/${foto}" alt="">`;
+      } else {
+        previewEl.textContent = '📷';
+      }
+    });
+  }
+
+  async function carregarMeusDados(){
+    const nome = $('campoAluno').value.trim();
+    if(!nome){ mostrarMsg('erro', 'Escreva seu nome no campo acima primeiro.'); return; }
+    if(!nomeValido(nome)){ mostrarMsg('erro', 'Use letras no seu nome.'); return; }
+    if(!dbRef){ mostrarMsg('erro', 'Não foi possível conectar. Recarregue a página.'); return; }
+    try{
+      const snap = await dbRef.collection(COLECAO).doc(slugify(nome)).get();
+      if(!snap.exists){
+        mostrarMsg('erro', 'Não encontramos uma árvore com esse nome ainda. Preencha e salve pela primeira vez.');
+        return;
+      }
+      const dados = snap.data();
+      if(dados && dados.aluno) $('campoAluno').value = dados.aluno;
+      preencherFormulario(dados || {});
+      mostrarMsg('ok', '✅ Dados carregados! Faça as alterações e toque em "Salvar minha árvore".');
+    } catch(e){
+      console.error(e);
+      mostrarMsg('erro', mensagemErro(e, 'carregar'));
+    }
+  }
+
+  function coletarParente(prefixo){
+    const nome = $(prefixo + 'Nome').value.trim();
+    const local = $(prefixo + 'Local').value.trim();
+    if(!local && !nome) return null;
+    const regiao = $(prefixo + 'Regiao').value || 'Não sei';
+    const dado = { nome, local, regiao };
+    if(fotosPendentes[prefixo]) dado.foto = fotosPendentes[prefixo];
+    return dado;
+  }
+
+  let salvando = false;
+  async function enviarArvore(){
+    if(salvando) return;
+    const alunoNome = $('campoAluno').value.trim();
+    if(!alunoNome){ mostrarMsg('erro', 'Escreva seu nome antes de salvar.'); return; }
+    if(!nomeValido(alunoNome)){ mostrarMsg('erro', 'Use letras no seu nome.'); return; }
+    if(!dbRef){ mostrarMsg('erro', 'Não foi possível conectar ao mapa compartilhado. Recarregue a página.'); return; }
+
+    // Avisa se alguém escolheu a região mas não escreveu nem nome nem lugar
+    const semLocal = PARENTES.filter(k => !$(k + 'Local').value.trim() && !$(k + 'Nome').value.trim() && $(k + 'Regiao').value);
+    if(semLocal.length){
+      mostrarMsg('erro', `Escreva o nome ou de onde veio: ${semLocal.map(k => LABEL_PARENTE[k]).join(', ')}. (Ou volte a região para "Região…")`);
+      return;
+    }
+
+    const dados = { aluno: alunoNome, atualizadoEm: Date.now() };
+    let algum = false;
+    PARENTES.forEach(k => { dados[k] = coletarParente(k); if(dados[k]) algum = true; });
+    if(!algum){ mostrarMsg('erro', 'Preencha a origem de pelo menos um parente.'); return; }
+
+    salvando = true;
+    const btn = $('btnEnviar');
+    btn.disabled = true;
+    try{
+      await dbRef.collection(COLECAO).doc(slugify(alunoNome)).set(dados);
+      mostrarMsg('ok', '✅ Árvore salva! Ela já aparece na árvore da turma abaixo.');
+      lancarConfete();
+      limparFormulario();
+    } catch(e){
+      console.error(e);
+      mostrarMsg('erro', mensagemErro(e, 'salvar'));
+    } finally {
+      salvando = false;
+      btn.disabled = false;
+    }
+  }
+
+  /* ---------- Exclusão com confirmação em dois toques ---------- */
+  function confirmarDoisToques(btn, textoConfirmar, acao){
+    if(btn.dataset.confirmando === 'sim'){
+      clearTimeout(Number(btn.dataset.timer));
+      btn.dataset.confirmando = 'nao';
+      btn.classList.remove('confirmando');
+      btn.textContent = btn.dataset.textoOriginal;
+      acao();
+      return;
+    }
+    btn.dataset.textoOriginal = btn.textContent;
+    btn.dataset.confirmando = 'sim';
+    btn.classList.add('confirmando');
+    btn.textContent = textoConfirmar;
+    btn.dataset.timer = setTimeout(() => {
+      btn.dataset.confirmando = 'nao';
+      btn.classList.remove('confirmando');
+      btn.textContent = btn.dataset.textoOriginal;
+    }, 4000);
+  }
+
+  async function excluirPorId(id, nome){
+    if(!dbRef){ mostrarMsg('erro', 'Não foi possível conectar. Recarregue a página.'); return; }
+    try{
+      await dbRef.collection(COLECAO).doc(id).delete();
+      mostrarMsg('ok', `🗑️ Árvore de ${nome} excluída da turma.`);
+      if(slugify($('campoAluno').value) === id) limparFormulario();
+    } catch(e){
+      console.error(e);
+      mostrarMsg('erro', mensagemErro(e, 'excluir'));
+    }
+  }
+
+  function excluirArvore(){
+    const nome = $('campoAluno').value.trim();
+    if(!nome){ mostrarMsg('erro', 'Escreva seu nome no campo acima primeiro.'); return; }
+    if(!nomeValido(nome)){ mostrarMsg('erro', 'Use letras no seu nome.'); return; }
+    const id = slugify(nome);
+    if(!arvores.some(a => a.id === id)){
+      mostrarMsg('erro', 'Não existe árvore salva com esse nome.');
+      return;
+    }
+    confirmarDoisToques($('btnExcluir'), '⚠️ Toque de novo para confirmar a exclusão', () => excluirPorId(id, nome));
+  }
+
+  /* ---------- Lista de gerenciamento (sem onclick inline) ---------- */
+  function renderGerenciarLista(){
+    const wrap = $('gerenciarLista');
+    if(arvores.length === 0){
+      wrap.innerHTML = '<div class="arvore-vazia">Nenhuma árvore salva ainda.</div>';
+      return;
+    }
+    wrap.innerHTML = arvores.map(a => `
+      <div class="gerenciar-item" data-id="${escapeHtml(a.id)}">
+        <span class="gerenciar-nome">🧑‍🎓 ${escapeHtml(a.aluno)}</span>
+        <button type="button" class="gerenciar-btn editar" data-acao="editar">✏️ Editar</button>
+        <button type="button" class="gerenciar-btn excluir" data-acao="excluir">🗑️ Excluir</button>
+      </div>`).join('');
+  }
+
+  $('gerenciarLista').addEventListener('click', (e) => {
+    const btn = e.target.closest('button[data-acao]');
+    if(!btn) return;
+    const id = btn.closest('.gerenciar-item').dataset.id;
+    const arvore = arvores.find(a => a.id === id);
+    if(!arvore) return;
+    if(btn.dataset.acao === 'editar'){
+      $('campoAluno').value = arvore.aluno;
+      preencherFormulario(arvore);
+      mostrarMsg('ok', `✏️ Editando a árvore de ${arvore.aluno}. Faça as alterações e salve.`);
+      $('formCard').scrollIntoView({ behavior:'smooth', block:'start' });
+    } else {
+      confirmarDoisToques(btn, '⚠️ Confirmar?', () => excluirPorId(id, arvore.aluno));
+    }
+  });
+
+  $('btnCarregar').addEventListener('click', carregarMeusDados);
+  $('btnEnviar').addEventListener('click', enviarArvore);
+  $('btnExcluir').addEventListener('click', excluirArvore);
+  $('campoAluno').addEventListener('keydown', (e) => { if(e.key === 'Enter') carregarMeusDados(); });
+
+  /* ---------- Efeitos ---------- */
+  function lancarConfete(){
+    if(window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const camada = $('confeteCamada');
+    const cores = ['#C1553B','#D9A441','#2B4570','#6B8F5E','#7C6BAE','#4ECDC4'];
+    for(let i=0; i<36; i++){
+      const p = document.createElement('div');
+      p.className = 'confete-peca';
+      const tamanho = 6 + Math.random()*7;
+      p.style.width = tamanho + 'px';
+      p.style.height = (tamanho*0.6) + 'px';
+      p.style.background = cores[Math.floor(Math.random()*cores.length)];
+      p.style.left = (Math.random()*100) + 'vw';
+      const duracao = 2.2 + Math.random()*1.6;
+      p.style.animationDuration = duracao + 's';
+      p.style.animationDelay = (Math.random()*0.3) + 's';
+      camada.appendChild(p);
+      setTimeout(() => p.remove(), (duracao+0.5)*1000);
+    }
+  }
+
+  let animContadorId = 0;
+  function animarContador(elId, de, ate, duracaoMs){
+    const el = $(elId);
+    const meuId = ++animContadorId;
+    const inicio = performance.now();
+    function passo(agora){
+      if(meuId !== animContadorId) return; // uma animação mais nova assumiu
+      const t = Math.min(1, (agora - inicio) / duracaoMs);
+      el.textContent = Math.round(de + (ate - de) * (1 - Math.pow(1-t, 3)));
+      if(t < 1) requestAnimationFrame(passo);
+    }
+    requestAnimationFrame(passo);
+  }
+
+  /* ---------- Desenho da árvore ---------- */
+  function encurtar(txt, max){
+    const chars = Array.from(String(txt || '')); // não quebra acentos/emojis ao meio
+    if(chars.length <= max) return escapeHtml(chars.join(''));
+    return escapeHtml(chars.slice(0, max-1).join('') + '…');
+  }
+
+  const f = (n) => n.toFixed(1);
+
+  let clipIdSeq = 0;
+  function noEmoji(x, y, raio, emoji, fundoCor, tamanhoFonteEmoji, fotoId){
+    const foto = fotoSegura(fotoId);
+    if(foto){
+      const clipId = 'clip' + (++clipIdSeq);
+      return `<clipPath id="${clipId}"><circle cx="${f(x)}" cy="${f(y)}" r="${raio}"/></clipPath>
+        <circle cx="${f(x)}" cy="${f(y)}" r="${raio+2.5}" fill="${fundoCor}"/>
+        <image href="/_blob/${foto}" x="${f(x-raio)}" y="${f(y-raio)}" width="${raio*2}" height="${raio*2}" clip-path="url(#${clipId})" preserveAspectRatio="xMidYMid slice"/>
+        <circle cx="${f(x)}" cy="${f(y)}" r="${raio}" fill="none" stroke="${fundoCor}" stroke-width="2.5"/>`;
+    }
+    return `<circle cx="${f(x)}" cy="${f(y)}" r="${raio}" fill="${fundoCor}" opacity="0.95"/>
+      <text x="${f(x)}" y="${f(y + tamanhoFonteEmoji*0.34)}" text-anchor="middle" font-size="${f(tamanhoFonteEmoji)}">${emoji}</text>`;
+  }
+
+  function rotulo(x, y, texto, tamanho, classe, peso){
+    return `<text class="rotulo ${classe}" x="${f(x)}" y="${f(y)}" text-anchor="middle" font-weight="${peso||600}" font-size="${tamanho}">${texto}</text>`;
+  }
+
+  function linha(x1, y1, x2, y2, cor, largura, opac){
+    return `<path class="galho" d="M${f(x1)},${f(y1)} L${f(x2)},${f(y2)}" stroke="${cor}" stroke-width="${largura}" fill="none" opacity="${opac}" stroke-linecap="round"/>`;
+  }
+
+  function renderTudo(){
+    renderGerenciarLista();
+    renderArvoreTurma();
+  }
+
+  function renderArvoreTurma(){
+    const svg = $('arvoreTurmaSvg');
+    const vazio = $('arvoreVazia');
+
+    if(arvores.length === 0){
+      svg.style.display = 'none';
+      svg.innerHTML = '';
+      vazio.style.display = 'block';
+      $('contadorArvores').textContent = 0;
+      animarContador('contadorNum', totalAnterior, 0, 400);
+      totalAnterior = 0;
+      return;
+    }
+    svg.style.display = 'block';
+    vazio.style.display = 'none';
+
+    // Ordem estável pelo nome para os alunos não trocarem de lugar a cada edição
+    const lista = [...arvores].sort((a, b) => a.aluno.localeCompare(b.aluno, 'pt-BR'));
+    const n = lista.length;
+    const passo = (Math.PI * 2) / n;
+
+    // Raios crescem com a turma; aberturas angulares encolhem para não sobrepor vizinhos
+    const R1 = Math.min(140 + n*5, 300);
+    const R2 = R1 + 115;
+    const R3 = R2 + 105;
+    const tamanho = (R3 + 70) * 2;
+    const cx = tamanho/2, cy = tamanho/2;
+    svg.setAttribute('viewBox', `0 0 ${tamanho} ${tamanho}`);
+
+    const denso = n > 14;
+    const raioAluno = denso ? 26 : 34;
+    const raioPaiMae = denso ? 20 : 28;
+    const raioAvo = denso ? 16 : 24;
+
+    const abrePaiMae = Math.min(0.15, passo * 0.24);
+    const abreAvos = Math.min(0.09, passo * 0.11);
+
+    let galhos = '', nos = '';
+
+    lista.forEach((a, i) => {
+      const angAluno = passo * i - Math.PI/2;
+      const ax = cx + R1 * Math.cos(angAluno);
+      const ay = cy + R1 * Math.sin(angAluno);
+
+      galhos += linha(cx, cy, ax, ay, 'var(--galho-turma)', 2.5, 0.8);
+
+      const angPai = angAluno - abrePaiMae;
+      const angMae = angAluno + abrePaiMae;
+      const px = cx + R2 * Math.cos(angPai), py = cy + R2 * Math.sin(angPai);
+      const mx = cx + R2 * Math.cos(angMae), my = cy + R2 * Math.sin(angMae);
+
+      // Avós ligam no pai/mãe se eles existirem; senão, direto no aluno
+      const origemPat = a.pai ? [px, py] : [ax, ay];
+      const origemMat = a.mae ? [mx, my] : [ax, ay];
+
+      if(a.pai) galhos += linha(ax, ay, px, py, '#8fa8cf', 2, 0.8);
+      if(a.mae) galhos += linha(ax, ay, mx, my, '#e0a596', 2, 0.8);
+
+      const apx = cx + R3*Math.cos(angPai - abreAvos),  apy = cy + R3*Math.sin(angPai - abreAvos);
+      const apmx = cx + R3*Math.cos(angPai + abreAvos), apmy = cy + R3*Math.sin(angPai + abreAvos);
+      const amx = cx + R3*Math.cos(angMae - abreAvos),  amy = cy + R3*Math.sin(angMae - abreAvos);
+      const ammx = cx + R3*Math.cos(angMae + abreAvos), ammy = cy + R3*Math.sin(angMae + abreAvos);
+
+      if(a.avoPaterno) galhos += linha(origemPat[0], origemPat[1], apx, apy, '#b8c6de', 1.6, 0.75);
+      if(a.avoPaterna) galhos += linha(origemPat[0], origemPat[1], apmx, apmy, '#b8c6de', 1.6, 0.75);
+      if(a.avoMaterno) galhos += linha(origemMat[0], origemMat[1], amx, amy, '#efc9be', 1.6, 0.75);
+      if(a.avoMaterna) galhos += linha(origemMat[0], origemMat[1], ammx, ammy, '#efc9be', 1.6, 0.75);
+
+      const corDe = (d) => CORES_REGIAO[d.regiao] || '#999999';
+      const titulo = (rotuloP, d) => `<title>${escapeHtml(rotuloP)}${d.nome ? ' — ' + escapeHtml(d.nome) : ''}: ${escapeHtml(d.local || 'origem não informada')} (${escapeHtml(d.regiao || 'Não sei')})</title>`;
+
+      // Parentes primeiro, aluno por cima
+      const parentes = [
+        ['pai',        a.pai,        px,   py,   '👨', raioPaiMae, 11, 9.5],
+        ['mae',        a.mae,        mx,   my,   '👩', raioPaiMae, 11, 9.5],
+        ['avoPaterno', a.avoPaterno, apx,  apy,  '👴', raioAvo,    10, 8.5],
+        ['avoPaterna', a.avoPaterna, apmx, apmy, '👵', raioAvo,    10, 8.5],
+        ['avoMaterno', a.avoMaterno, amx,  amy,  '👴', raioAvo,    10, 8.5],
+        ['avoMaterna', a.avoMaterna, ammx, ammy, '👵', raioAvo,    10, 8.5]
+      ];
+      parentes.forEach(([k, d, x, y, emoji, r, maxTxt, fonte]) => {
+        if(!d || (!d.local && !d.nome)) return;
+        let textos = '';
+        let yTxt = y + r + 12;
+        if(d.nome){
+          textos += rotulo(x, yTxt, encurtar(d.nome, maxTxt), fonte + 0.5, 'rotulo-aluno', 700);
+          yTxt += fonte + 2;
+        }
+        if(d.local){
+          textos += rotulo(x, yTxt, encurtar(d.local, maxTxt), fonte, 'rotulo-local', 600);
+        }
+        nos += `<g class="no-familia">${titulo(LABEL_PARENTE[k] + ' de ' + a.aluno, d)}
+          ${noEmoji(x, y, r, emoji, corDe(d), r * 1.05, d.foto)}
+          ${textos}
+        </g>`;
+      });
+
+      nos += `<g class="no-familia"><title>${escapeHtml(a.aluno)}</title>
+        ${noEmoji(ax, ay, raioAluno, '🧑‍🎓', '#2B4570', raioAluno * 1.05)}
+        ${rotulo(ax, ay + raioAluno + 14, encurtar(a.aluno, 12), 11.5, 'rotulo-aluno', 700)}
+      </g>`;
+    });
+
+    const centro = `
+      <circle cx="${f(cx)}" cy="${f(cy)}" r="44" fill="#2B4570"/>
+      <circle cx="${f(cx)}" cy="${f(cy)}" r="44" fill="none" stroke="#D9A441" stroke-width="3"/>
+      <text x="${f(cx)}" y="${f(cy+11)}" text-anchor="middle" font-size="30">🏫</text>`;
+
+    clipIdSeq = 0;
+    svg.innerHTML = galhos + centro + nos;
+
+    let total = 0;
+    lista.forEach(a => PARENTES.forEach(k => { if(a[k] && a[k].local) total++; }));
+    animarContador('contadorNum', totalAnterior, total, 700);
+    totalAnterior = total;
+    $('contadorArvores').textContent = n;
+  }
+
+  iniciarDb();
+</script>
+
+</body>
+</html>
